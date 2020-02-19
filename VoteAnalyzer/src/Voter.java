@@ -1,7 +1,8 @@
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 
-public class Voter
+public class Voter implements Comparable<Voter>
 {
     private String name;
     private Date birthDay;
@@ -11,6 +12,9 @@ public class Voter
         this.name = name;
         this.birthDay = birthDay;
     }
+
+
+
 
     @Override
     public boolean equals(Object obj)
@@ -43,5 +47,10 @@ public class Voter
     public Date getBirthDay()
     {
         return birthDay;
+    }
+
+    @Override
+    public int compareTo(Voter o) {
+        return name.compareTo(o.getName());
     }
 }

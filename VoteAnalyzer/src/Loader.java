@@ -5,6 +5,8 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,24 +25,31 @@ public class Loader
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         String fileName = "res/data-18M.xml";
 
-        parseFile(fileName);
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = factory.newSAXParser();
+        XMLHandler handler = new XMLHandler();
+        parser.parse(new File(fileName),handler);
+        handler.getDuplicatedVoters();
 
-        //Printing results
-        System.out.println("Voting station work times: ");
-        for(Integer votingStation : voteStationWorkTimes.keySet())
-        {
-            WorkTime workTime = voteStationWorkTimes.get(votingStation);
-            System.out.println("\t" + votingStation + " - " + workTime);
-        }
 
-        System.out.println("Duplicated voters: ");
-        for(Voter voter : voterCounts.keySet())
-        {
-            Integer count = voterCounts.get(voter);
-            if(count > 1) {
-                System.out.println("\t" + voter + " - " + count);
-            }
-        }
+//        parseFile(fileName);
+//
+//        //Printing results
+//        System.out.println("Voting station work times: ");
+//        for(Integer votingStation : voteStationWorkTimes.keySet())
+//        {
+//            WorkTime workTime = voteStationWorkTimes.get(votingStation);
+//            System.out.println("\t" + votingStation + " - " + workTime);
+//        }
+//
+//        System.out.println("Duplicated voters: ");
+//        for(Voter voter : voterCounts.keySet())
+//        {
+//            Integer count = voterCounts.get(voter);
+//            if(count > 1) {
+//                System.out.println("\t" + voter + " - " + count);
+//            }
+//        }
     long finishMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - startMemory;
         System.out.println((finishMemory - startMemory) / 1024 / 1024 + "mb");
     }
