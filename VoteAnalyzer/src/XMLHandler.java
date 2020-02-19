@@ -3,15 +3,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class XMLHandler extends DefaultHandler {
     Voter voter;
     private static SimpleDateFormat birthDayFormat = new SimpleDateFormat("yyyy.MM.dd");
     private Map<Voter,Integer> voterCounts;
-
     public XMLHandler() {
         voterCounts = new TreeMap<>();
     }
@@ -30,8 +27,6 @@ public class XMLHandler extends DefaultHandler {
         } catch (ParseException e) {
             e.getMessage();
         }
-
-
     }
 
     @Override
@@ -40,11 +35,10 @@ public class XMLHandler extends DefaultHandler {
             voter = null;
         }
     }
-
     public void getDuplicatedVoters () {
         for (Voter voter : voterCounts.keySet()) {
             int count = voterCounts.get(voter);
-            if (count > 1) {
+            if (count  > 1) {
                 System.out.println(voter.toString() + "-" + count);
             }
         }

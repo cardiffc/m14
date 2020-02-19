@@ -2,8 +2,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
-public class Voter implements Comparable<Voter>
-{
+public class Voter implements Comparable<Voter> {
     private String name;
     private Date birthDay;
 
