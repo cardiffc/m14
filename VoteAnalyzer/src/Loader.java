@@ -11,47 +11,37 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class Loader
+
+
 {
+
     private static SimpleDateFormat birthDayFormat = new SimpleDateFormat("yyyy.MM.dd");
     private static SimpleDateFormat visitDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
     private static HashMap<Integer, WorkTime> voteStationWorkTimes = new HashMap<>();
-    private static HashMap<Voter, Integer> voterCounts = new HashMap<>();
 
     public static void main(String[] args) throws Exception
     {
-        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        String fileName = "res/data-18M.xml";
 
+        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long startTime = System.currentTimeMillis();
+        String fileName = "res/data-1572M.xml";
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser = factory.newSAXParser();
         XMLHandler handler = new XMLHandler();
         parser.parse(new File(fileName),handler);
-        handler.getDuplicatedVoters();
 
+        /** вот это нужно,чтобы догрузить в базу то, что осталось в буфере. Dcя запись реализована в XMLHandler*/
+        handler.writeBuffer();
 
-//        parseFile(fileName);
-//
-//        //Printing results
-//        System.out.println("Voting station work times: ");
-//        for(Integer votingStation : voteStationWorkTimes.keySet())
-//        {
-//            WorkTime workTime = voteStationWorkTimes.get(votingStation);
-//            System.out.println("\t" + votingStation + " - " + workTime);
-//        }
-//
-//        System.out.println("Duplicated voters: ");
-//        for(Voter voter : voterCounts.keySet())
-//        {
-//            Integer count = voterCounts.get(voter);
-//            if(count > 1) {
-//                System.out.println("\t" + voter + " - " + count);
-//            }
-//        }
-    long finishMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - startMemory;
+        //   DBConnection.printVoterCounts();
+        long finishTime = System.currentTimeMillis();
+        long finishMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - startMemory;
         System.out.println((finishMemory - startMemory) / 1024 / 1024 + "mb");
+        System.out.println("Durations is: " + (finishTime - startTime) + "ms");
     }
 
     private static void parseFile(String fileName) throws Exception
@@ -60,8 +50,8 @@ public class Loader
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(new File(fileName));
 
-        findEqualVoters(doc);
-        fixWorkTimes(doc);
+       // findEqualVoters(doc);
+        DBConnection.printVoterCounts();
     }
 
     private static void findEqualVoters(Document doc) throws Exception
@@ -74,11 +64,12 @@ public class Loader
             NamedNodeMap attributes = node.getAttributes();
 
             String name = attributes.getNamedItem("name").getNodeValue();
-            Date birthDay = birthDayFormat.parse(attributes.getNamedItem("birthDay").getNodeValue());
-
-            Voter voter = new Voter(name, birthDay);
-            Integer count = voterCounts.get(voter);
-            voterCounts.put(voter, count == null ? 1 : count + 1);
+            //Date birthDay = birthDayFormat.parse(attributes.getNamedItem("birthDay").getNodeValue());
+            String birthDay = attributes.getNamedItem("birthDay").getNodeValue();
+          //  DBConnection.countVoter(name, birthDay);
+//            Voter voter = new Voter(name, birthDay);
+//            Integer count = voterCounts.get(voter);
+//            voterCounts.put(voter, count == null ? 1 : count + 1);
         }
     }
 
