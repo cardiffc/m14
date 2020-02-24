@@ -2,7 +2,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
@@ -11,31 +10,24 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 public class Loader
-
-
 {
-
-    private static SimpleDateFormat birthDayFormat = new SimpleDateFormat("yyyy.MM.dd");
     private static SimpleDateFormat visitDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-
     private static HashMap<Integer, WorkTime> voteStationWorkTimes = new HashMap<>();
-
     public static void main(String[] args) throws Exception
     {
 
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long startTime = System.currentTimeMillis();
-        String fileName = "res/data-1572M.xml";
+        String fileName = "res/data-18M.xml";
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser = factory.newSAXParser();
         XMLHandler handler = new XMLHandler();
         parser.parse(new File(fileName),handler);
 
         /** вот это нужно,чтобы догрузить в базу то, что осталось в буфере. Dcя запись реализована в XMLHandler*/
-        handler.writeBuffer();
+        handler.writeToDb();
 
         //   DBConnection.printVoterCounts();
         long finishTime = System.currentTimeMillis();
@@ -64,12 +56,8 @@ public class Loader
             NamedNodeMap attributes = node.getAttributes();
 
             String name = attributes.getNamedItem("name").getNodeValue();
-            //Date birthDay = birthDayFormat.parse(attributes.getNamedItem("birthDay").getNodeValue());
             String birthDay = attributes.getNamedItem("birthDay").getNodeValue();
-          //  DBConnection.countVoter(name, birthDay);
-//            Voter voter = new Voter(name, birthDay);
-//            Integer count = voterCounts.get(voter);
-//            voterCounts.put(voter, count == null ? 1 : count + 1);
+
         }
     }
 

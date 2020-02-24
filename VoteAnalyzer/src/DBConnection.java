@@ -1,5 +1,4 @@
 import java.sql.*;
-import java.util.TreeMap;
 
 public class DBConnection
 {
@@ -26,8 +25,8 @@ public class DBConnection
                         "birthDate date not null, " +
                         "count int not null, "+
                         "primary key(id), " +
-                        //"key(name(50)), " +
-                        "unique key (name(50), birthDate))";
+                        "key(name(50)))"; //, " +
+                        //"unique key (name(50), birthDate))";
                 connection.createStatement().execute(create);
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -39,9 +38,8 @@ public class DBConnection
     public static void executeMultiInsert(StringBuilder query2) throws SQLException
     {
         String query = "INSERT INTO voter_count(name,birthDate,count) " +
-            "VALUES" + query2.toString() +
-            " ON DUPLICATE KEY UPDATE count=count + 1";
-        DBConnection.getConnection().createStatement().execute(query);
+            "VALUES" + query2.toString();
+         DBConnection.getConnection().createStatement().execute(query);
     }
     public static void printVoterCounts() throws SQLException
     {

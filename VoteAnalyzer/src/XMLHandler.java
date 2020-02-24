@@ -2,50 +2,54 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class XMLHandler extends DefaultHandler {
+    Map<Voter,Integer> voters;
+    Voter voter = null;
     StringBuilder query;
-    private int iteration = 0;
+    int bufferSize = 1_100_000;
     public XMLHandler() {
-        query = new StringBuilder();
+        voters = new TreeMap();
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (qName.equals("voter")) {
-
-            try {
-                String name = attributes.getValue("name");
-                String bd = attributes.getValue("birthDay");
-                query.append((query.length() == 0 ? "":",") + "('" + name + "','" + bd + "', 1)");
-                /** Вот тут эмперически установлен размер буфера. Дальше наращивать нет смысла, т.к. не дает прироста
-                 * производительности. При этом мы приближаемся к максимальной длинне запроса в MySQL (это, конечно, можно
-                 * потюнить, но задача то не про это. Для понимания также печатаем количество итераций "сброса" буфера
-                 */
-                if (query.length() > 20 * 1024 * 1024) {
-                    iteration++;
-                    System.out.println(iteration);
-                    DBConnection.executeMultiInsert(query);
-                    query = new StringBuilder();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        if (voters.size() >= bufferSize) {
+            writeToDb();
+            voters.clear();
         }
-     }
+        if (qName.equals("voter") && voter == null) {
+            voter = new Voter(attributes.getValue("name"), attributes.getValue("birthDay"));
+        }
+        if (qName.equals("visit") && voter != null) {
+            int count = voters.getOrDefault(voter, 0);
+            count++;
+            voters.put(voter, count);
+
+        }
+    }
+
+    public void writeToDb () {
+        try {
+            query = new StringBuilder();
+            for (Voter voter : voters.keySet()) {
+                String name = voter.getName();
+                String birthDate = voter.getBirthDay();
+                int count = voters.get(voter);
+                query.append((query.length() == 0 ? "" : ",") + "('" + name + "','" + birthDate + "'," + count + ")");
+            }
+            DBConnection.executeMultiInsert(query);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equals("voter")) {
+            voter = null;
         }
     }
-
-
-    public void writeBuffer () throws SQLException {
-        DBConnection.executeMultiInsert(query);
-        query = new StringBuilder();
-        System.out.println(query);
-
-    }
-
 }
